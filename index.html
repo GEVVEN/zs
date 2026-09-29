@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智商查询器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #a8c0ff 0%, #fbc2eb 50%, #a6c1ee 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            overflow: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 液态玻璃背景效果 */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .blob:nth-child(1) {
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 182, 193, 0.7);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .blob:nth-child(2) {
+            width: 400px;
+            height: 400px;
+            background: rgba(173, 216, 230, 0.7);
+            top: 50%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+
+        .blob:nth-child(3) {
+            width: 250px;
+            height: 250px;
+            background: rgba(255, 192, 203, 0.6);
+            bottom: 10%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.9); }
+            75% { transform: translate(40px, 40px) scale(1.05); }
+        }
+
+        /* 主容器 */
+        .container {
+            position: relative;
+            z-index: 1;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 30px;
+            padding: 50px 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 3em;
+            color: #fff;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            letter-spacing: 4px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            font-size: 1.2em;
+            color: #fff;
+            margin-bottom: 12px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            font-size: 1.1em;
+            background: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            color: #333;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(100, 100, 100, 0.6);
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 1.3em;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 烟花特效 */
+        .firework {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: explode 1.5s ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 星星闪烁 */
+        .star {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            animation: twinkle 2s infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* 结果样式 */
+        .result.high-iq {
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 140, 0, 0.3));
+            border: 1px solid rgba(255, 215, 0, 0.5);
+        }
+
+        .result.low-iq {
+            background: rgba(255, 99, 71, 0.2);
+            border: 1px solid rgba(255, 99, 71, 0.4);
+        }
+
+        .result.warning {
+            background: rgba(255, 165, 0, 0.2);
+            border: 1px solid rgba(255, 165, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- 液态玻璃背景 -->
+    <div class="liquid-bg">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+
+    <!-- 主容器 -->
+    <div class="container">
+        <h1>🧠 智商查询器</h1>
+        
+        <div class="input-group">
+            <label for="nameInput">请输入真名进行查询：</label>
+            <input type="text" id="nameInput" placeholder="输入你的名字..." autocomplete="off">
+        </div>
+        
+        <button onclick="checkIQ()">开始查询</button>
+        
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        // 特殊用户列表
+        const specialUsers = [
+            { name: "高梓航", emoji: "🦅" },
+            { name: "高子航", emoji: "🦅" },
+            { name: "孤独的狼", emoji: "🐺" },
+            { name: "实力大于群主", emoji: "💪" },
+            { name: "北极熊", emoji: "🐻‍❄️" },
+            { name: "撒手出门至少宇宙大爆炸的无敌", emoji: "💥" }
+        ];
+
+        // 脏话关键词
+        const badWords = ['傻', '蠢', '笨', '脑残', '废物', '垃圾', '滚', '去死'];
+
+        const nameInput = document.getElementById('nameInput');
+        const resultDiv = document.getElementById('result');
+
+        // 回车键查询
+        nameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkIQ();
+            }
+        });
+
+        function checkIQ() {
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                showResult('请输入你的名字哦~ 🤔', 'warning');
+                return;
+            }
+
+            // 检查是否是特殊用户
+            const specialUser = specialUsers.find(u => name.includes(u.name) || u.name.includes(name));
+            
+            if (specialUser) {
+                showResult(`${specialUser.emoji} ${specialUser.emoji} ${specialUser.emoji}<br>智商：∞ 无限大！！！！<br>${specialUser.emoji} ${specialUser.emoji} ${specialUser.emoji}<br>宇宙级智商爆发！！！！`, 'high-iq');
+                createFireworks();
+                createStars();
+                return;
+            }
+
+            // 检查是否包含脏话
+            const hasBadWord = badWords.some(word => name.includes(word));
+            if (hasBadWord) {
+                showResult('😤 不能骂人哦！！！', 'warning');
+                return;
+            }
+
+            // 普通用户
+            showResult('😅 智商不太行...', 'low-iq');
+        }
+
+        function showResult(html, className) {
+            resultDiv.innerHTML = html;
+            resultDiv.className = 'result ' + className;
+        }
+
+        function createFireworks() {
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+            
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight * 0.6;
+                    createFirework(x, y, colors);
+                }, i * 300);
+            }
+        }
+
+        function createFirework(x, y, colors) {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = x + 'px';
+            firework.style.top = y + 'px';
+            document.body.appendChild(firework);
+
+            const particleCount = 30;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const angle = (i / particleCount) * 2 * Math.PI;
+                const distance = 100 + Math.random() * 100;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                firework.appendChild(particle);
+            }
+
+            setTimeout(() => firework.remove(), 1500);
+        }
+
+        function createStars() {
+            const stars = ['⭐', '🌟', '✨', '💫'];
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star';
+                    star.textContent = stars[Math.floor(Math.random() * stars.length)];
+                    star.style.left = Math.random() * window.innerWidth + 'px';
+                    star.style.top = Math.random() * window.innerHeight + 'px';
+                    star.style.fontSize = (20 + Math.random() * 20) + 'px';
+                    document.body.appendChild(star);
+                    
+                    setTimeout(() => star.remove(), 2000);
+                }, i * 100);
+            }
+        }
+    </script>
+</body>
+</html>
